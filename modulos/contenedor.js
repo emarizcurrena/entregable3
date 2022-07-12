@@ -45,18 +45,33 @@ module.exports = class Contenedor {
     async getById(id) {
         let contenido = await this.getFileContent()
         const result = contenido.find((objeto) => {
-            return id === objeto.id;
+            return parseInt(id) === objeto.id;
         })
         return result || null;
     }
+
+    // recibe y actualiza un producto segun su id
+    async updateById(id, datos) {
+        let contenido = await this.getFileContent()
+        const objId = contenido.findIndex((product) => {
+            return product.id === parseInt(id);
+        })
+        const objectoAUpdatear = contenido[objId];
+        objectoAUpdatear.title = datos.title;
+        objectoAUpdatear.price = datos.price;
+        objectoAUpdatear.thumbnail = datos.thumbnail;
+        await fs.promises.writeFile(this.nombreArchivo, `${JSON.stringify(contenido)}`);
+
+        return objId || null;
+    }
+
 
     async deleteById(id) {
         try {
             if (fs.existsSync(this.nombreArchivo)) {
                 const content = await fs.promises.readFile(this.nombreArchivo, 'utf-8');
-                const newProducts = content && (await JSON.parse(content).filter((element) => element.id !== id));
+                const newProducts = content && (JSON.parse(content).filter((element) => element.id !== parseInt(id)));
                 await fs.promises.writeFile(this.nombreArchivo, `${JSON.stringify(newProducts)}`);
-                return newProducts;
             } else {
                 console.log('File not exist');
             }
